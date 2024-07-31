@@ -17,7 +17,7 @@ class JobTechDataIngestion:
         """
         self.logger = setup_logging()
         self.year = year
-        self.period = period
+        self.period = '{:02d}'.format(int(period))
         self.countryCode = 'SG'
         self.vendor_code ='jt'
         self.parent_directory = os.path.dirname(os.path.dirname(__file__))
@@ -35,6 +35,15 @@ class JobTechDataIngestion:
             self.statics_path = os.path.join(self.output_directory, f"statics-{self.countryCode}-{self.vendor_code}-{self.year}m-{self.period}.csv")
 
     # def get_quarter_from_month(self, month):
+        # """
+        # Convert month to quarter
+
+        # Args:
+        #     month (str): The month to be converted to quarter
+
+        # Returns:
+        #     int: quarter of the month being converted
+        # """
     #     return (int(month)-1) // 3 + 1
 
 
@@ -221,6 +230,11 @@ class JobTechDataIngestion:
 
     def process_data(self):
         try:
+            if int(self.year) > 2024 or (int(self.year) == 2024 and int(self.period) >= 3):
+                sfw_file_name = f'{self.vendor_code}-jobs-sfw-{self.year}-{self.period}.csv'
+            else:
+                sfw_file_name = f'{self.vendor_code}-jobs-sfw-{self.year}m{self.period}.csv'
+
             # recruitment firm
             df_recruitment = pd.read_csv(self.recruitment_agencies_filepath)
             recruitment_list = list(df_recruitment['RecruitmentCompanies'])
@@ -231,7 +245,7 @@ class JobTechDataIngestion:
             # print(df_normalized.shape[0])
             self.logger.info("Loaded and normalized job posting data.")
             # sfw data
-            df_sfw = pd.read_csv(os.path.join(self.data_directory, f'{self.vendor_code}-jobs-sfw-{self.year}m{self.period}.csv'))
+            df_sfw = pd.read_csv(os.path.join(self.data_directory, sfw_file_name))
             # df_sfw[df_sfw["job_id"] == '6a4fdcf987b42489c61021594d0b9fb0d5a4c664a72c2f63c6fc66eb4791d065'].to_csv("output/testing.csv")
             self.logger.info("Loaded skills future data.")
             # data transformation
